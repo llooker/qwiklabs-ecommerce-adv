@@ -17,10 +17,28 @@ view: order_items {
       date,
       week,
       month,
+      month_name,
       quarter,
       year
     ]
     sql: ${TABLE}.created_at ;;
+  }
+
+
+  dimension: reporting_period {
+    description: "This Year to date versus Last Year to date"
+    group_label: "Created Date"
+    sql: CASE
+        WHEN extract(year from ${created_raw}) = extract(year from current_date)
+        AND ${created_raw} < CURRENT_TIMESTAMP
+        THEN 'This Year to Date'
+
+        WHEN extract(year from ${created_raw}) + 1 = extract(year from current_date)
+        AND extract(dayofyear from ${created_raw}) <= extract(dayofyear from current_date)
+        THEN 'Last Year to Date'
+
+      END
+       ;;
   }
 
   dimension_group: delivered {
@@ -38,6 +56,11 @@ view: order_items {
     sql: ${TABLE}.delivered_at ;;
   }
 
+  dimension: is_returned {
+    type: yesno
+    sql: ${returned_raw} is null ;;
+  }
+
   dimension: inventory_item_id {
     type: number
     # hidden: yes
@@ -47,6 +70,12 @@ view: order_items {
   dimension: order_id {
     type: number
     sql: ${TABLE}.order_id ;;
+  }
+
+  dimension: months_since_signup {
+    description: "Time between current order and when that user was created"
+    type: number
+    sql: DATE_DIFF(${created_date},${users.created_date},month) ;;
   }
 
   dimension_group: returned {
@@ -105,6 +134,35 @@ view: order_items {
   }
 
   measure: total_sales {
+    type: sum
+    sql: ${sale_price} ;;
+    value_format_name: usd
+  }
+
+  measure: average_sale_price {
+    type: average
+    sql: ${sale_price} ;;
+    value_format_name: usd
+  }
+
+  measure: average_spend_per_user {
+    type: average
+    sql: ${sale_price} ;;
+    sql_distinct_key: ${user_id} ;;
+    value_format_name: usd
+  }
+
+  measure: order_item_count {
+    type: count
+    drill_fields: [detail*]
+  }
+
+  measure: order_count {
+    type: count_distinct
+    sql: ${order_id} ;;
+  }
+
+  measure: total_revenue {
     type: sum
     sql: ${sale_price} ;;
     value_format_name: usd

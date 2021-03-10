@@ -9,9 +9,17 @@ view: users {
     sql: ${TABLE}.id ;;
   }
 
+
   dimension: age {
     type: number
     sql: ${TABLE}.age ;;
+  }
+
+  dimension: age_tier {
+    type: tier
+    sql: ${age} ;;
+    tiers: [10, 20, 30, 40, 50, 60, 70, 80, 90]
+    style: integer
   }
 
   dimension: city {
@@ -72,6 +80,12 @@ view: users {
   dimension: state {
     type: string
     sql: ${TABLE}.state ;;
+  }
+
+  dimension: map_location {
+    type: location
+    sql_latitude: ${latitude} ;;
+    sql_longitude: ${longitude} ;;
   }
 
   dimension: traffic_source {

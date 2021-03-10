@@ -3,6 +3,7 @@ connection: "bigquery_public_data_looker"
 # include all the views
 include: "/views/**/*.view"
 include: "/z_tests/*.lkml"
+include: "/dashboards/*.dashboard"
 
 datagroup: training_ecommerce_default_datagroup {
   # sql_trigger: SELECT MAX(id) FROM etl_log;;
@@ -79,3 +80,7 @@ explore: inventory_items {
     relationship: many_to_one
   }
 }
+
+explore: products {}
+
+explore: users {}
